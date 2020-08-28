@@ -2,12 +2,14 @@ package bookings
 
 import (
 	"errors"
+	"sync"
 	"time"
 )
 
 type (
 	// Repository struct
 	Repository struct {
+		lock sync.RWMutex
 		Database      []*Booking
 	}
 	// IRepository interface
@@ -33,10 +35,14 @@ func (r *Repository) SaveBooking(b *Booking) error {
 	if b == nil {
 		return errors.New("booking is nil")
 	}
+	r.lock.Lock()
+	defer r.lock.Unlock()
 	r.Database = append(r.Database, b)
 	return nil
 }
 
 func (r *Repository) GetBookings() []*Booking {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
 	return r.Database
 }
